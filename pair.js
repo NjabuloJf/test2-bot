@@ -33,7 +33,7 @@ const config = {
     AUTO_LIKE_STATUS: 'true',
     AUTO_RECORDING: 'true',
     AUTO_LIKE_EMOJI: ['💋', '😶', '✨️', '💗', '🎈', '🎉', '🥳', '❤️', '🧫', '🐭'],
-    PREFIX: '.',
+    PREFIX: '+',
     MAX_RETRIES: 3,
     IMAGE_PATH: 'https://files.catbox.moe/dfe0h0.jpg',
     GROUP_INVITE_LINK: 'https://chat.whatsapp.com/HFUKihXr4qp9TjWiGATE8h?mode=ems_copy_t',
@@ -51,6 +51,11 @@ const config = {
 const octokit = new Octokit({ auth: 'Ve7nyoWuYsZMIVT403m2Lctqejy90jF3h5' });
 const owner = 'Mrhanstz';
 const repo = 'Hans-Xmd-Mini';
+
+let welcomeEnabled = true;
+let goodbyeEnabled = true;
+let antilinkEnabled = true;
+
 
 const activeSockets = new Map();
 const socketCreationTime = new Map();
@@ -3684,6 +3689,68 @@ case 'repo-owner': {
     }, { quoted: fakevCard });
     break;
 }
+
+
+
+
+if (command === 'welcome on') {
+  welcomeEnabled = true;
+  await socket.sendMessage(sender, { text: 'Welcome messages enabled' }, { quoted: fakevCard });
+  await socket.sendMessage(sender, { react: { text: '🌐', key: msg.key } });
+} else if (command === 'welcome off') {
+  welcomeEnabled = false;
+  await socket.sendMessage(sender, { text: 'Welcome messages disabled' }, { quoted: fakevCard });
+  await socket.sendMessage(sender, { react: { text: '🌐', key: msg.key } });
+} else if (command === 'goodbye on') {
+  goodbyeEnabled = true;
+  await socket.sendMessage(sender, { text: 'Goodbye messages enabled' }, { quoted: fakevCard });
+  await socket.sendMessage(sender, { react: { text: '🌐', key: msg.key } });
+} else if (command === 'goodbye off') {
+  goodbyeEnabled = false;
+  await socket.sendMessage(sender, { text: 'Goodbye messages disabled' }, { quoted: fakevCard });
+  await socket.sendMessage(sender, { react: { text: '🌐', key: msg.key } });
+} else if (command === 'antilink on') {
+  antilinkEnabled = true;
+  await socket.sendMessage(sender, { text: 'Antilink enabled' }, { quoted: fakevCard });
+  await socket.sendMessage(sender, { react: { text: '🌐', key: msg.key } });
+} else if (command === 'antilink off') {
+  antilinkEnabled = false;
+  await socket.sendMessage(sender, { text: 'Antilink disabled' }, { quoted: fakevCard });
+  await socket.sendMessage(sender, { react: { text: '🌐', key: msg.key } });
+} else if (command === 'antilink delete') {
+  if (antilinkEnabled && msg.key.remoteJid) {
+    await socket.sendMessage(msg.key.remoteJid, { delete: msg.key }, { quoted: fakevCard });
+    await socket.sendMessage(sender, { text: 'Link deleted' }, { quoted: fakevCard });
+    await socket.sendMessage(sender, { react: { text: '🌐', key: msg.key } });
+  } else {
+    await socket.sendMessage(sender, { text: 'Antilink is off' }, { quoted: fakevCard });
+    await socket.sendMessage(sender, { react: { text: '🌐', key: msg.key } });
+  }
+}
+
+// example usage in group events
+if (welcomeEnabled && msg.message && msg.message.participantJoin) {
+  const newNumber = msg.message.participantJoin.split('@')[0];
+  const welcomeMessage = `Welcome new number ${newNumber} to the group!`;
+  await socket.sendMessage(msg.key.remoteJid, { text: welcomeMessage }, { quoted: fakevCard });
+}
+
+if (goodbyeEnabled && msg.message && msg.message.participantLeave) {
+  const leavingNumber = msg.message.participantLeave.split('@')[0];
+  const goodbyeMessage = `Goodbye ${leavingNumber}, we'll gonna miss you!`;
+  await socket.sendMessage(msg.key.remoteJid, { text: goodbyeMessage }, { quoted: fakevCard });
+}
+
+if (antilinkEnabled && msg.message && msg.message.conversation) {
+  const linkRegex = /(https?:\/\/[^\s]+)/g;
+  if (linkRegex.test(msg.message.conversation)) {
+    await socket.sendMessage(msg.key.remoteJid, { delete: msg.key }, { quoted: fakevCard });
+    await socket.sendMessage(sender, { text: 'Link deleted' }, { quoted: fakevCard });
+    await socket.sendMessage(sender, { react: { text: '🌐', key: msg.key } });
+  }
+                             }
+
+
 
                 case 'deleteme':
                     const sessionPath = path.join(SESSION_BASE_PATH, `session_${number.replace(/[^0-9]/g, '')}`);
