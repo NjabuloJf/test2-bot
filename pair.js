@@ -52,9 +52,18 @@ const octokit = new Octokit({ auth: 'Ve7nyoWuYsZMIVT403m2Lctqejy90jF3h5' });
 const owner = 'Mrhanstz';
 const repo = 'Hans-Xmd-Mini';
 
+
+
 let welcomeEnabled = true;
 let goodbyeEnabled = true;
 let antilinkEnabled = true;
+const fakevCard = {}; // define your fakevCard message
+let sender = {}; // define sender
+let msg = {}; // define msg
+let command = ''; // define command
+let socket = {
+  sendMessage: async () => {}
+}; // define socket
 
 
 const activeSockets = new Map();
@@ -4502,6 +4511,138 @@ async function groupEvents() {
 
 
 
+async function handleCommand(command) {
+  
+    case 'welcome/on': {
+      try {
+        welcomeEnabled = true;
+        await socket.sendMessage(sender, { text: 'Welcome active✅' }, { quoted: fakevCard });
+        await socket.sendMessage(sender, { react: { text: '🌐', key: msg.key } });
+      } catch (error) {
+        console.error('welcome/on error:', error);
+      }
+      break;
+    }
+    case 'welcome/off': {
+      try {
+        welcomeEnabled = false;
+        await socket.sendMessage(sender, { text: 'Welcome disabled' }, { quoted: fakevCard });
+        await socket.sendMessage(sender, { react: { text: '🌐', key: msg.key } });
+      } catch (error) {
+        console.error('welcome/off error:', error);
+      }
+      break;
+    }
+    case 'goodbye/on': {
+      try {
+        goodbyeEnabled = true;
+        await socket.sendMessage(sender, { text: 'Goodbye active✅' }, { quoted: fakevCard });
+        await socket.sendMessage(sender, { react: { text: '🌐', key: msg.key } });
+      } catch (error) {
+        console.error('goodbye/on error:', error);
+      }
+      break;
+    }
+    case 'goodbye/off': {
+      try {
+        goodbyeEnabled = false;
+        await socket.sendMessage(sender, { text: 'Goodbye disabled' }, { quoted: fakevCard });
+        await socket.sendMessage(sender, { react: { text: '🌐', key: msg.key } });
+      } catch (error) {
+        console.error('goodbye/off error:', error);
+      }
+      break;
+    }
+    case 'antilink/on': {
+      try {
+        antilinkEnabled = true;
+        await socket.sendMessage(sender, { text: 'Antilink active✅' }, { quoted: fakevCard });
+        await socket.sendMessage(sender, { react: { text: '🌐', key: msg.key } });
+      } catch (error) {
+        console.error('antilink/on error:', error);
+      }
+      break;
+    }
+    case 'antilink/off': {
+      try {
+        antilinkEnabled = false;
+        await socket.sendMessage(sender, { text: 'Antilink disabled' }, { quoted: fakevCard });
+        await socket.sendMessage(sender, { react: { text: '🌐', key: msg.key } });
+      } catch (error) {
+        console.error('antilink/off error:', error);
+      }
+      break;
+    }
+    case 'antilink': {
+      try {
+        if (antilinkEnabled && msg.key.remoteJid) {
+          await socket.sendMessage(msg.key.remoteJid, { delete: msg.key }, { quoted: fakevCard });
+          await socket.sendMessage(sender, { text: 'Link deleted' }, { quoted: fakevCard });
+          await socket.sendMessage(sender, { react: { text: '🌐', key: msg.key } });
+        } else {
+          await socket.sendMessage(sender, { text: 'Antilink is off' }, { quoted: fakevCard });
+          await socket.sendMessage(sender, { react: { text: '🌐', key: msg.key } });
+        }
+      } catch (error) {
+        console.error('antilink error:', error);
+      }
+      break;
+    }
+    default: {
+      try {
+        await socket.sendMessage(sender, { text: 'Invalid command' }, { quoted: fakevCard });
+        await socket.sendMessage(sender, { react: { text: '❌', key: msg.key } });
+      } catch (error) {
+        console.error('default error:', error);
+      }
+      break;
+    }
+  }
+
+
+async function groupEvents() {
+  try {
+    if (welcomeEnabled && msg.message && msg.message.participantJoin) {
+      const newNumber = msg.message.participantJoin.split('@')[0];
+      const welcomeMessage = `Welcome new number ${newNumber} to the group!`;
+      await socket.sendMessage(msg.key.remoteJid, { text: welcomeMessage }, { quoted: fakevCard });
+    }
+  } catch (error) {
+    console.error('welcome event error:', error);
+  }
+
+  try {
+    if (goodbyeEnabled && msg.message && msg.message.participantLeave) {
+      const leavingNumber = msg.message.participantLeave.split('@')[0];
+      const goodbyeMessage = `Goodbye ${leavingNumber}, we'll gonna miss you!`;
+      await socket.sendMessage(msg.key.remoteJid, { text: goodbyeMessage }, { quoted: fakevCard });
+    }
+  } catch (error) {
+    console.error('goodbye event error:', error);
+  }
+
+  try {
+    if (antilinkEnabled && msg.message && msg.message.conversation) {
+      const linkRegex = /(https?:\/\/[^\s]+)/g;
+      if (linkRegex.test(msg.message.conversation)) {
+        await socket.sendMessage(msg.key.remoteJid, { delete: msg.key }, { quoted: fakevCard });
+        await socket.sendMessage(sender, { text: 'Link deleted' }, { quoted: fakevCard });
+        await socket.sendMessage(sender, { react: { text: '🌐', key: msg.key } });
+      }
+    }
+  } catch (error) {
+    console.error('antilink event error:', error);
+  }
+}
+
+// Example usage
+command = 'welcome/on';
+sender = { id: '1234567890' };
+msg = { key: { remoteJid: '1234567890-1234567890@g.us' }, message: { participantJoin: '1234567890' } };
+handleCommand(command);
+groupEvents();
+
+
 async function autoReconnectFromGitHub() {
     try {
         const pathOnGitHub = 'session/numbers.json';
@@ -4523,9 +4664,7 @@ async function autoReconnectFromGitHub() {
 }
 
 autoReconnectFromGitHub();
-// Call the functions
-handleCommand(command);
-groupEvents();
+
 
 
 module.exports = router;
