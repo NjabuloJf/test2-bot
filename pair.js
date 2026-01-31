@@ -4512,7 +4512,7 @@ async function groupEvents() {
 
 
 async function handleCommand(command) {
-  
+  switch (command) {
     case 'welcome/on': {
       try {
         welcomeEnabled = true;
@@ -4598,6 +4598,7 @@ async function handleCommand(command) {
       break;
     }
   }
+}
 
 
 async function groupEvents() {
