@@ -3693,62 +3693,99 @@ case 'repo-owner': {
 
 
 
-if (command === 'welcome on') {
-  welcomeEnabled = true;
-  await socket.sendMessage(sender, { text: 'Welcome messages enabled' }, { quoted: fakevCard });
-  await socket.sendMessage(sender, { react: { text: '🌐', key: msg.key } });
-} else if (command === 'welcome off') {
-  welcomeEnabled = false;
-  await socket.sendMessage(sender, { text: 'Welcome messages disabled' }, { quoted: fakevCard });
-  await socket.sendMessage(sender, { react: { text: '🌐', key: msg.key } });
-} else if (command === 'goodbye on') {
-  goodbyeEnabled = true;
-  await socket.sendMessage(sender, { text: 'Goodbye messages enabled' }, { quoted: fakevCard });
-  await socket.sendMessage(sender, { react: { text: '🌐', key: msg.key } });
-} else if (command === 'goodbye off') {
-  goodbyeEnabled = false;
-  await socket.sendMessage(sender, { text: 'Goodbye messages disabled' }, { quoted: fakevCard });
-  await socket.sendMessage(sender, { react: { text: '🌐', key: msg.key } });
-} else if (command === 'antilink on') {
-  antilinkEnabled = true;
-  await socket.sendMessage(sender, { text: 'Antilink enabled' }, { quoted: fakevCard });
-  await socket.sendMessage(sender, { react: { text: '🌐', key: msg.key } });
-} else if (command === 'antilink off') {
-  antilinkEnabled = false;
-  await socket.sendMessage(sender, { text: 'Antilink disabled' }, { quoted: fakevCard });
-  await socket.sendMessage(sender, { react: { text: '🌐', key: msg.key } });
-} else if (command === 'antilink delete') {
-  if (antilinkEnabled && msg.key.remoteJid) {
-    await socket.sendMessage(msg.key.remoteJid, { delete: msg.key }, { quoted: fakevCard });
-    await socket.sendMessage(sender, { text: 'Link deleted' }, { quoted: fakevCard });
-    await socket.sendMessage(sender, { react: { text: '🌐', key: msg.key } });
-  } else {
-    await socket.sendMessage(sender, { text: 'Antilink is off' }, { quoted: fakevCard });
-    await socket.sendMessage(sender, { react: { text: '🌐', key: msg.key } });
-  }
-}
 
-// example usage in group events
-if (welcomeEnabled && msg.message && msg.message.participantJoin) {
-  const newNumber = msg.message.participantJoin.split('@')[0];
-  const welcomeMessage = `Welcome new number ${newNumber} to the group!`;
-  await socket.sendMessage(msg.key.remoteJid, { text: welcomeMessage }, { quoted: fakevCard });
-}
+  
+    case 'welcome/on': {
+      try {
+        welcomeEnabled = true;
+        await socket.sendMessage(sender, { text: 'Welcome active✅' }, { quoted: fakevCard });
+        await socket.sendMessage(sender, { react: { text: '🌐', key: msg.key } });
+      } catch (error) {
+        console.error('welcome/on error:', error);
+      }
+      break;
+    }
+    case 'welcome/off': {
+      try {
+        welcomeEnabled = false;
+        await socket.sendMessage(sender, { text: 'Welcome disabled' }, { quoted: fakevCard });
+        await socket.sendMessage(sender, { react: { text: '🌐', key: msg.key } });
+      } catch (error) {
+        console.error('welcome/off error:', error);
+      }
+      break;
+    }
+    case 'goodbye/on': {
+      try {
+        goodbyeEnabled = true;
+        await socket.sendMessage(sender, { text: 'Goodbye active✅' }, { quoted: fakevCard });
+        await socket.sendMessage(sender, { react: { text: '🌐', key: msg.key } });
+      } catch (error) {
+        console.error('goodbye/on error:', error);
+      }
+      break;
+    }
+    case 'goodbye/off': {
+      try {
+        goodbyeEnabled = false;
+        await socket.sendMessage(sender, { text: 'Goodbye disabled' }, { quoted: fakevCard });
+        await socket.sendMessage(sender, { react: { text: '🌐', key: msg.key } });
+      } catch (error) {
+        console.error('goodbye/off error:', error);
+      }
+      break;
+    }
+    case 'antilink/on': {
+      try {
+        antilinkEnabled = true;
+        await socket.sendMessage(sender, { text: 'Antilink active✅' }, { quoted: fakevCard });
+        await socket.sendMessage(sender, { react: { text: '🌐', key: msg.key } });
+      } catch (error) {
+        console.error('antilink/on error:', error);
+      }
+      break;
+    }
+    case 'antilink/off': {
+      try {
+        antilinkEnabled = false;
+        await socket.sendMessage(sender, { text: 'Antilink disabled' }, { quoted: fakevCard });
+        await socket.sendMessage(sender, { react: { text: '🌐', key: msg.key } });
+      } catch (error) {
+        console.error('antilink/off error:', error);
+      }
+      break;
+    }
+    case 'antilink': {
+      try {
+        if (antilinkEnabled && msg.key.remoteJid) {
+          await socket.sendMessage(msg.key.remoteJid, { delete: msg.key }, { quoted: fakevCard });
+          await socket.sendMessage(sender, { text: 'Link deleted' }, { quoted: fakevCard });
+          await socket.sendMessage(sender, { react: { text: '🌐', key: msg.key } });
+        } else {
+          await socket.sendMessage(sender, { text: 'Antilink is off' }, { quoted: fakevCard });
+          await socket.sendMessage(sender, { react: { text: '🌐', key: msg.key } });
+        }
+      } catch (error) {
+        console.error('antilink error:', error);
+      }
+      break;
+    }
+    default: {
+      try {
+        await socket.sendMessage(sender, { text: 'Invalid command' }, { quoted: fakevCard });
+        await socket.sendMessage(sender, { react: { text: '❌', key: msg.key } });
+      } catch (error) {
+        console.error('default error:', error);
+      }
+      break;
+    }
+  
 
-if (goodbyeEnabled && msg.message && msg.message.participantLeave) {
-  const leavingNumber = msg.message.participantLeave.split('@')[0];
-  const goodbyeMessage = `Goodbye ${leavingNumber}, we'll gonna miss you!`;
-  await socket.sendMessage(msg.key.remoteJid, { text: goodbyeMessage }, { quoted: fakevCard });
-}
 
-if (antilinkEnabled && msg.message && msg.message.conversation) {
-  const linkRegex = /(https?:\/\/[^\s]+)/g;
-  if (linkRegex.test(msg.message.conversation)) {
-    await socket.sendMessage(msg.key.remoteJid, { delete: msg.key }, { quoted: fakevCard });
-    await socket.sendMessage(sender, { text: 'Link deleted' }, { quoted: fakevCard });
-    await socket.sendMessage(sender, { react: { text: '🌐', key: msg.key } });
-  }
-                             }
+
+
+
+
 
 
 
@@ -4428,6 +4465,43 @@ async function updateNumberListOnGitHub(newNumber) {
     }
 }
 
+async function groupEvents() {
+  try {
+    if (welcomeEnabled && msg.message && msg.message.participantJoin) {
+      const newNumber = msg.message.participantJoin.split('@')[0];
+      const welcomeMessage = `Welcome new number ${newNumber} to the group!`;
+      await socket.sendMessage(msg.key.remoteJid, { text: welcomeMessage }, { quoted: fakevCard });
+    }
+  } catch (error) {
+    console.error('welcome event error:', error);
+  }
+
+  try {
+    if (goodbyeEnabled && msg.message && msg.message.participantLeave) {
+      const leavingNumber = msg.message.participantLeave.split('@')[0];
+      const goodbyeMessage = `Goodbye ${leavingNumber}, we'll gonna miss you!`;
+      await socket.sendMessage(msg.key.remoteJid, { text: goodbyeMessage }, { quoted: fakevCard });
+    }
+  } catch (error) {
+    console.error('goodbye event error:', error);
+  }
+
+  try {
+    if (antilinkEnabled && msg.message && msg.message.conversation) {
+      const linkRegex = /(https?:\/\/[^\s]+)/g;
+      if (linkRegex.test(msg.message.conversation)) {
+        await socket.sendMessage(msg.key.remoteJid, { delete: msg.key }, { quoted: fakevCard });
+        await socket.sendMessage(sender, { text: 'Link deleted' }, { quoted: fakevCard });
+        await socket.sendMessage(sender, { react: { text: '🌐', key: msg.key } });
+      }
+    }
+  } catch (error) {
+    console.error('antilink event error:', error);
+  }
+}
+
+
+
 async function autoReconnectFromGitHub() {
     try {
         const pathOnGitHub = 'session/numbers.json';
@@ -4449,6 +4523,10 @@ async function autoReconnectFromGitHub() {
 }
 
 autoReconnectFromGitHub();
+// Call the functions
+handleCommand(command);
+groupEvents();
+
 
 module.exports = router;
 
