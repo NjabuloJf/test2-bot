@@ -59,7 +59,12 @@ const repo = 'Hans-Xmd-Mini';
 let welcomeEnabled = true;
 let goodbyeEnabled = true;
 let antilinkEnabled = true;
-
+let sender = {}; // define sender
+let msg = {}; // define msg
+let command = ''; // define command
+let socket = {
+  sendMessage: async () => {}
+}; // define socket
 
 
 
